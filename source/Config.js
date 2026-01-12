@@ -1,10 +1,15 @@
-// SC PUSH BY LEXZY & SKYZOPEDIA //
-// BASE DEVELOPERS SKYZO t.me/@Xskycode //
-// YT LEXZYMARKET t.me/@Lexzymarket //
-/* # Penting
-   Jangan hapus credits atau nama developer
-   hargai pembuat script ini!*/
 
+/* 
+
+   #### Pushkontak By Danzx Official #####
+   
+   Developer: 
+   - Danzx Official (wa.me/6285124271621)
+   
+   Follow Channel Developer:
+   - https://whatsapp.com/channel/0029VbB360c1yT28JBy8L921
+  
+*/
 
 const {
   extractMessageContent: a,

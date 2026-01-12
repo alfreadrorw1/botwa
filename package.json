@@ -1,6 +1,6 @@
 {
-  "name": "Simpel menu",
-  "version": "3.0.0",
+  "name": "MasDanzx",
+  "version": "1.0.0",
   "description": "WhatsApp Bot using Baileys",
   "main": "main.js",
   "scripts": {
@@ -18,9 +18,12 @@
     "fluent-ffmpeg": "^2.1.2",
     "jimp": "^0.22.12",
     "moment-timezone": "^0.5.34",
+    "link-preview-js": "^3.1.0",
+    "mongoose": "^7.3.4",
     "node-fetch": "^2.6.7",
     "node-webpmux": "^3.1.0",
     "node-upload-images": "^1.0.1",
+    "link-preview-js": "^3.1.0",
     "os": "^0.1.2",
     "pino": "^8.0.0",
     "qrcode-terminal": "^0.12.0",

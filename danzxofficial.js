@@ -4,15 +4,11 @@ const fs = require("fs");
 const axios = require("axios");
 const fetch = require("node-fetch");
 const { exec, spawn, execSync } = require('child_process');
+const LoadDataBase = require("./source/LoadDatabase.js");
 
-const Antilink2 = JSON.parse(fs.readFileSync("./Data/antilink2.json"))
-const Antilink = JSON.parse(fs.readFileSync("./Data/antilink.json"))
-const welcome = JSON.parse(fs.readFileSync("./Data/welcome.json"))
-const Reseller = JSON.parse(fs.readFileSync("./Data/reseller.json"))
-
-module.exports = async (m, sock, store) => {
+module.exports = async (m, sock) => {
 try {
-const Developer = JSON.parse(fs.readFileSync("./Data/developer.json"))
+await LoadDataBase(sock, m)
 const isCmd = m?.body?.startsWith(m.prefix)
 const quoted = m.quoted ? m.quoted : m
 const mime = quoted?.msg?.mimetype || quoted?.mimetype || null
@@ -22,28 +18,20 @@ const text = q = args.join(" ")
 const command = isCmd ? m.body.slice(m.prefix.length).trim().split(' ').shift().toLowerCase() : ''
 const cmd = m.prefix + command
 const botNumber = await sock.user.id.split(":")[0]+"@s.whatsapp.net"
-const isOwner = global.owner+"@s.whatsapp.net" == m.sender || m.sender == botNumber || Developer.includes(m.sender)
-const isReseller = Reseller.includes(m.sender)
-try {
+const isOwner = global.owner+"@s.whatsapp.net" == m.sender || m.sender == botNumber || db.settings.developer.includes(m.sender)
+const isReseller = db.settings.reseller.includes(m.sender)
   m.isGroup = m.chat.endsWith('g.us');
-  if (m.isGroup) {
-    let meta = store.get(m.chat)
-    if (!meta) meta = await sock.groupMetadata(m.chat)
-    m.metadata = meta;
-    const p = meta.participants || [];
-    m.isAdmin = p.some(i => (i.id === m.sender || i.jid === m.sender) && i.admin !== null);
-    m.isBotAdmin = p.some(i => (i.id === botNumber || i.jid === botNumber) && i.admin !== null);
-  } else {
-    m.metadata = {};
-    m.isAdmin = false;
-    m.isBotAdmin = false;
-  }
-} catch {
   m.metadata = {};
   m.isAdmin = false;
   m.isBotAdmin = false;
-}
-
+  if (m.isGroup) {
+    let meta = await global.groupMetadataCache.get(m.chat)
+    if (!meta) meta = await sock.groupMetadata(m.chat).catch(_ => {})
+    m.metadata = meta;
+    const p = meta?.participants || [];
+    m.isAdmin = p?.some(i => (i.id === m.sender || i.jid === m.sender) && i.admin !== null);
+    m.isBotAdmin = p?.some(i => (i.id === botNumber || i.jid == botNumber) && i.admin !== null);
+  } 
 
 if (isCmd) {
 console.log(chalk.white("• Sender :"), chalk.blue(m.chat) + "\n" + chalk.white("• Command :"), chalk.blue(cmd) + "\n")
@@ -61,7 +49,7 @@ const FakeChannel = {
   message: {
     newsletterAdminInviteMessage: {
       newsletterJid: '123@newsletter',
-      caption: `SC BY BIANZ ${global.namaOwner}.`,
+      caption: `Powered By ${global.namaOwner}.`,
       inviteExpiration: 0
     }
   }
@@ -74,7 +62,7 @@ const FakeLocation = {
   },
   message: {
     locationMessage: {
-      name: `SC BY BIANZ ${global.namaOwner}.`,
+      name: `Powered By ${global.namaOwner}.`,
       jpegThumbnail: ''
     }
   }
@@ -89,7 +77,7 @@ const FakeSticker = {
         message: {
             stickerPackMessage: {
                 stickerPackId: "\000",
-                name: `SC BY BIANZ ${global.namaOwner}.`,
+                name: `Powered By ${global.namaOwner}.`,
                 publisher: "kkkk"
             }
         }
@@ -98,24 +86,14 @@ const FakeSticker = {
 
 //=============================================//
 
-if (Antilink.includes(m.chat)) {
-    const groupInviteLinkRegex = /chat\.whatsapp\.com|buka tautan ini untuk bergabung ke grup whatsapp/gi;
-    if (groupInviteLinkRegex.test(m.text) && !isOwner && !m.isAdmin && m.isBotAdmin) {
-        const currentGroupLink = `https://chat.whatsapp.com/${await sock.groupInviteCode(m.chat)}`;
-        const isLinkFromThisGroup = new RegExp(currentGroupLink, 'i').test(m.text);
-        if (isLinkFromThisGroup) {
-            return;
-        }
-        const senderJid = m.sender;
-        const messageId = m.key.id;
-        const participantToDelete = m.key.participant;
-        await m.reply(`🚨 *Peringatan Link Grup Terdeteksi!*
-
-📌 *Pengirim:* @${m.sender.split("@")[0]}
-
-Mohon maaf, membagikan link grup lain di sini tidak diperbolehkan.
-
-Hanya link grup ini yang diizinkan untuk dibagikan.`);
+if (global.db.groups[m.chat]?.antilink === true) {
+    const textMessage = m.text || ""
+    const groupInviteLinkRegex = /(https?:\/\/)?(www\.)?chat\.whatsapp\.com\/[A-Za-z0-9]+(\?[^\s]*)?/gi
+    const links = textMessage.match(groupInviteLinkRegex)
+    if (links && !isOwner && !m.isAdmin && m.isBotAdmin) {
+        const senderJid = m.sender
+        const messageId = m.key.id
+        const participantToDelete = m.key.participant || m.sender
         await sock.sendMessage(m.chat, {
             delete: {
                 remoteJid: m.chat,
@@ -123,31 +101,19 @@ Hanya link grup ini yang diizinkan untuk dibagikan.`);
                 id: messageId,
                 participant: participantToDelete
             }
-        });
-        await sleep(800);
-        await sock.groupParticipantsUpdate(m.chat, [senderJid], "remove");
+        })
+        await sleep(800)
+        await sock.groupParticipantsUpdate(m.chat, [senderJid], "remove")
     }
 }
 
-
-if (Antilink2.includes(m.chat)) {
-    const groupInviteLinkRegex = /chat\.whatsapp\.com|buka tautan ini untuk bergabung ke grup whatsapp/gi;
-    if (groupInviteLinkRegex.test(m.text) && !isOwner && !m.isAdmin && m.isBotAdmin) {
-        const currentGroupLink = `https://chat.whatsapp.com/${await sock.groupInviteCode(m.chat)}`;
-        const isLinkFromThisGroup = new RegExp(currentGroupLink, 'i').test(m.text);
-        if (isLinkFromThisGroup) {
-            return;
-        }
-        const senderJid = m.sender;
-        const messageId = m.key.id;
-        const participantToDelete = m.key.participant;
-        await m.reply(`🚨 *Peringatan Link Grup Terdeteksi!*
-
-📌 *Pengirim:* @${m.sender.split("@")[0]}
-
-Mohon maaf, membagikan link grup lain di sini tidak diperbolehkan.
-
-Hanya link grup ini yang diizinkan untuk dibagikan.`);
+if (global.db.groups[m.chat]?.antilink2 === true) {
+    const textMessage = m.text || ""
+    const groupInviteLinkRegex = /(https?:\/\/)?(www\.)?chat\.whatsapp\.com\/[A-Za-z0-9]+(\?[^\s]*)?/gi
+    const links = textMessage.match(groupInviteLinkRegex)
+    if (links && !isOwner && !m.isAdmin && m.isBotAdmin) {
+        const messageId = m.key.id
+        const participantToDelete = m.key.participant || m.sender
         await sock.sendMessage(m.chat, {
             delete: {
                 remoteJid: m.chat,
@@ -155,7 +121,7 @@ Hanya link grup ini yang diizinkan untuk dibagikan.`);
                 id: messageId,
                 participant: participantToDelete
             }
-        });
+        })
     }
 }
 
@@ -164,63 +130,56 @@ Hanya link grup ini yang diizinkan untuk dibagikan.`);
 switch (command) {
 case "menu": {
 const teks = `
-╔═══[ 𝐈𝐍𝐅𝐎𝐑𝐌𝐀𝐒𝐈 𝐁𝐎𝐓 ]═══╗
-║ 𝐌𝐎𝐃𝐄    : ${sock.public ? " Public" : " Self"}
-║ 𝐑𝐔𝐍𝐓𝐈𝐌𝐄 : ${runtime(process.uptime())}
-║ 𝐎𝐖𝐍𝐄𝐑   : @${global.owner}
-╚═════════════════════════╝
+  ⌯⌲ BotMode: ${sock.public ? "Public" : "Self"}
+  ⌯⌲ RunTime: ${runtime(process.uptime())}
+  ⌯⌲ Owner: @${global.owner}
+ 
+「 ✦ MAIN MENU ✦ 」
+⌯⌲ tourl
+⌯⌲ tourl2
+⌯⌲ sticker
+⌯⌲ cekidch
 
-╔═══[ MAIN MENU ]═══╗
-║ ➤ .tourl
-║ ➤ .tourl2    
-║ ➤ .sticker
-║ ➤ .cekidch
-╚══════════════════════╝
+「 ✦ GROUP MENU ✦ 」
+⌯⌲ antilink
+⌯⌲ antilink2
+⌯⌲ welcome
+⌯⌲ statusgrup
+⌯⌲ hidetag
+⌯⌲ kick
+⌯⌲ open
+⌯⌲ close
 
-╔═══[  GRUP MENU ]═══╗
-║ ➤ .antilink
-║ ➤ .antilink2
-║ ➤ .welcome
-║ ➤ .statusgrup
-║ ➤ .hidetag
-║ ➤ .kick
-║ ➤ .open
-║ ➤ .close
-╚══════════════════════╝
+「 ✦ STORE MENU ✦ 」
+⌯⌲ pushkontak
+⌯⌲ pushkontak2
+⌯⌲ savekontak
+⌯⌲ stoppush
+⌯⌲ setjeda
+⌯⌲ savenomor
+⌯⌲ jpm
+⌯⌲ jpmht
+⌯⌲ jpmch
+⌯⌲ stopjpm
+⌯⌲ payment
+⌯⌲ proses
+⌯⌲ done
 
-╔═══[  STORE MENU ]═══╗
-║ ➤ .pushkontak (randomteks luar & dlm grup)
-║ ➤ .pushkontak2 (dalam grup)
-║ ➤ .savekontak (nama)
-║ ➤ .stoppush
-║ ➤ .setjeda
-║ ➤ .savenomor
-║ ➤ .jpm
-║ ➤ .jpmht
-║ ➤ .jpmch
-║ ➤ .stopjpm
-║ ➤ .payment
-║ ➤ .feerekber
-║ ➤ .formatneed
-║ ➤ .formatjp
-║ ➤ .proses
-║ ➤ .done
-╚══════════════════════╝
+「 ✦ PANEL MENU ✦ 」
+⌯⌲ addseller
+⌯⌲ delseller
+⌯⌲ listseller
+⌯⌲ 1gb - unlimited
+⌯⌲ delpanel
+⌯⌲ listpanel
+⌯⌲ cadmin
+⌯⌲ deladmin
+⌯⌲ listadmin
 
-╔═══[ PANEL MENU ]═══╗
-║ ➤ .addseller
-║ ➤ .delseller
-║ ➤ .listseller
-║ ➤ .1gb - unlimited
-║ ➤ .delpanel
-║ ➤ .listpanel
-║ ➤ .cadmin
-║ ➤ .deladmin
-║ ➤ .listadmin
-║ ➤ .addowner
-║ ➤ .listowner
-║ ➤ .delowner  
-╚══════════════════════╝
+「 ✦ OWNER MENU ✦ 」
+⌯⌲ addowner
+⌯⌲ listowner
+⌯⌲ delowner
 `
 await sock.sendMessage(m.chat, {
     text: teks,
@@ -229,12 +188,12 @@ await sock.sendMessage(m.chat, {
         isForwarded: true,    
         forwardedNewsletterMessageInfo: {
       newsletterJid: global.idChannel,
-      newsletterName: `Powered by ${global.namaOwner}`,
+      newsletterName: `Powered By ${global.namaOwner}`,
       serverId: 200
     },
         externalAdReply: {
         thumbnailUrl: global.thumbnail, 
-        title: "Pushkontak Version 3.0.0", 
+        title: "AfiqXPush", 
         renderLargerThumbnail: true, 
         mediaType: 1
         }
@@ -243,7 +202,6 @@ await sock.sendMessage(m.chat, {
 }
 break;
 
- // ================= FREE REKBER =================
 
 case "payment": case "pay": {
 const teksPayment = `
@@ -265,7 +223,7 @@ break;
 
 case "cekidch":
 case "idch": {
-  if (!text) return m.reply(`*contoh:* ${cmd} link channel`); 
+  if (!text) return m.reply(`*Contoh :* ${cmd} link channel`); 
   if (!text.includes("https://whatsapp.com/channel/")) {
     return m.reply("Link channel tidak valid");
   }
@@ -276,20 +234,22 @@ case "idch": {
 }
 break;
 
-case "status": case "statusgrup": {
-if (!isOwner) return m.reply(mess.owner);
-if (!m.isGroup) return m.reply(mess.group);
-const teks = `
-- Antilink : ${Antilink.includes(m.chat) ? "✅" : "❌"}
-- Antilink2 : ${Antilink2.includes(m.chat) ? "✅" : "❌"}
-- Welcome : ${welcome.includes(m.chat) ? "✅" : "❌"}
+case "status":
+case "statusgrup": {
+    if (!isOwner) return m.reply(mess.owner);
+    if (!m.isGroup) return m.reply(mess.group);
+    const group = global.db.groups[m.chat] || {};
+    const teks = `
+- Antilink  : ${group.antilink ? "✅" : "❌"}
+- Antilink2 : ${group.antilink2 ? "✅" : "❌"}
+- Welcome   : ${global.db.settings.welcome ? "✅" : "❌"}
 
 _✅ = Aktif_
 _❌ = Tidak Aktif_
-`
-return m.reply(teks)
+`;
+    return m.reply(teks);
 }
-break
+break;
 
 case "done":
 case "don":
@@ -360,6 +320,44 @@ if (!/image/.test(mime)) return m.reply(`Media tidak ditemukan!\nKetik *${cmd}* 
 }
 break
 
+case "backupsc":
+case "bck":
+case "backup": {
+    if (m.sender.split("@")[0] !== global.owner && m.sender !== botNumber)
+        return m.reply(mess.owner);
+    try {        
+        const tmpDir = "./Tmp";
+        if (fs.existsSync(tmpDir)) {
+            const files = fs.readdirSync(tmpDir).filter(f => !f.endsWith(".js"));
+            for (let file of files) {
+                fs.unlinkSync(`${tmpDir}/${file}`);
+            }
+        }
+        await m.reply("Processing Backup Script . .");        
+        const name = `Script-PushkontakV2`; 
+        const exclude = ["node_modules", "danzxofficial", "session", "package-lock.json", "yarn.lock", ".npm", ".cache"];
+        const filesToZip = fs.readdirSync(".").filter(f => !exclude.includes(f) && f !== "");
+
+        if (!filesToZip.length) return m.reply("Tidak ada file yang dapat di-backup.");
+
+        execSync(`zip -r ${name}.zip ${filesToZip.join(" ")}`);
+
+        await sock.sendMessage(m.sender, {
+            document: fs.readFileSync(`./${name}.zip`),
+            fileName: `${name}.zip`,
+            mimetype: "application/zip"
+        }, { quoted: m });
+
+        fs.unlinkSync(`./${name}.zip`);
+
+        if (m.chat !== m.sender) m.reply("Script bot berhasil dikirim ke private chat.");
+    } catch (err) {
+        console.error("Backup Error:", err);
+        m.reply("Terjadi kesalahan saat melakukan backup.");
+    }
+}
+break;
+
 case "kick":
 case "kik": {
     if (!m.isGroup) return m.reply(mess.group);
@@ -427,7 +425,7 @@ case "hidetag": {
     if (!text) return m.reply(`*Contoh :* ${cmd} pesannya`);
     try {
         if (!m.metadata || !m.metadata.participants) return m.reply("Gagal mendapatkan daftar anggota grup. Coba lagi.");
-        const members = m.metadata.participants.map(v => v.id.includes(".net") ? v.id : v.jid);
+        const members = m.metadata.participants.map(v => v.id.includes("@s.whatsapp.net") ? v.id : v.jid);
         await sock.sendMessage(m.chat, {
             text: text,
             mentions: members
@@ -442,57 +440,42 @@ case "hidetag": {
 break;
 
 case "welcome": {
-    if (!m.isGroup) return m.reply(mess.group);
     if (!isOwner) return m.reply(mess.owner);
     if (!text) return m.reply(`*Contoh :* ${cmd} on/off`);
-    if (!/on|off/.test(text)) return m.reply(`*contoh:* ${cmd} on/off`);
+    if (!/on|off/.test(text)) return m.reply(`*Contoh :* ${cmd} on/off`);
 
-    if (/on/.test(text)) {
-        if (welcome.includes(m.chat)) 
-            return m.reply("Berhasil menyalakan welcome di grup ini ✅");
-        
-        welcome.push(m.chat);
-        await fs.writeFileSync("./Data/welcome.json", JSON.stringify(welcome, null, 2));
-        return m.reply("Berhasil menyalakan welcome di grup ini ✅");
+    if (text === "on") {
+        if (global.db.settings.welcome) 
+            return m.reply("Welcome sudah aktif ✅");
+        global.db.settings.welcome = true;
+        return m.reply("Berhasil menyalakan welcome ✅");
     }
 
-    if (/off/.test(text)) {
-        if (!welcome.includes(m.chat)) 
-            return m.reply("Berhasil menyalakan welcome di grup ini ✅");
-        
-        const inde = welcome.indexOf(m.chat);
-        welcome.splice(inde, 1);
-        await fs.writeFileSync("./Data/welcome.json", JSON.stringify(welcome, null, 2));
-        return m.reply("Berhasil mematikan welcome di grup ini ✅");
+    if (text === "off") {
+        if (!global.db.settings.welcome) 
+            return m.reply("Welcome sudah tidak aktif ✅");
+        global.db.settings.welcome = false;
+        return m.reply("Berhasil mematikan welcome ✅");
     }
 }
 break;
 
 case "antilink": {
-    if (!isOwner) return m.reply(mess.owner)
+    if (!isOwner) return m.reply(mess.owner);
     if (!m.isGroup) return m.reply(mess.group);
     if (!text) return m.reply(`*Contoh :* ${cmd} on/off`);
 
-    const isAntilink = Antilink.includes(m.chat);
-    const isAntilink2 = Antilink2.includes(m.chat);
-
+    let group = global.db.groups[m.chat];
     if (text === "on") {
-        if (isAntilink) return m.reply(`Antilink di grup ini sudah aktif!`);
-        if (isAntilink2) {
-            const posisi = Antilink2.indexOf(m.chat);
-            if (posisi !== -1) Antilink2.splice(posisi, 1);
-            await fs.writeFileSync("./Data/antilink2.json", JSON.stringify(Antilink2, null, 2));
-        }
-        Antilink.push(m.chat);
-        await fs.writeFileSync("./Data/antilink.json", JSON.stringify(Antilink, null, 2));
+        if (group.antilink) return m.reply(`Antilink di grup ini sudah aktif!`);
+        group.antilink = true;
+        group.antilink2 = false;
         return m.reply(`Berhasil menyalakan antilink di grup ini ✅`);
     }
 
     if (text === "off") {
-        if (!isAntilink) return m.reply(`Antilink di grup ini sudah tidak aktif!`);
-        const posisi = Antilink.indexOf(m.chat);
-        if (posisi !== -1) Antilink.splice(posisi, 1);
-        await fs.writeFileSync("./Data/antilink.json", JSON.stringify(Antilink, null, 2));
+        if (!group.antilink) return m.reply(`Antilink di grup ini sudah tidak aktif!`);
+        group.antilink = false;
         return m.reply(`Berhasil mematikan antilink di grup ini ✅`);
     }
 }
@@ -503,26 +486,17 @@ case "antilink2": {
     if (!m.isGroup) return m.reply(mess.group);
     if (!text) return m.reply(`*Contoh :* ${cmd} on/off`);
 
-    const isAntilink = Antilink.includes(m.chat);
-    const isAntilink2 = Antilink2.includes(m.chat);
-
+    let group = global.db.groups[m.chat];
     if (text === "on") {
-        if (isAntilink2) return m.reply(`Antilink2 di grup ini sudah aktif!`);
-        if (isAntilink) {
-            const posisi = Antilink.indexOf(m.chat);
-            if (posisi !== -1) Antilink.splice(posisi, 1);
-            await fs.writeFileSync("./Data/antilink.json", JSON.stringify(Antilink, null, 2));
-        }
-        Antilink2.push(m.chat);
-        await fs.writeFileSync("./Data/antilink2.json", JSON.stringify(Antilink2, null, 2));
+        if (group.antilink2) return m.reply(`Antilink2 di grup ini sudah aktif!`);
+        group.antilink2 = true;
+        group.antilink = false;
         return m.reply(`Berhasil menyalakan antilink2 di grup ini ✅`);
     }
 
     if (text === "off") {
-        if (!isAntilink2) return m.reply(`Antilink2 di grup ini sudah tidak aktif!`);
-        const posisi = Antilink2.indexOf(m.chat);
-        if (posisi !== -1) Antilink2.splice(posisi, 1);
-        await fs.writeFileSync("./Data/antilink2.json", JSON.stringify(Antilink2, null, 2));
+        if (!group.antilink2) return m.reply(`Antilink2 di grup ini sudah tidak aktif!`);
+        group.antilink2 = false;
         return m.reply(`Berhasil mematikan antilink2 di grup ini ✅`);
     }
 }
@@ -665,7 +639,7 @@ if (/video/.test(mime)) {
 if ((qmsg).seconds > 15) return m.reply("Durasi vidio maksimal 15 detik!")
 }
 var media = await sock.downloadAndSaveMediaMessage(qmsg)
-await sock.sendStimg(m.chat, media, m, {packname: "Lexzymarket."})
+await sock.sendStimg(m.chat, media, m, {packname: "Danzx"})
 }
 break
 
@@ -728,7 +702,6 @@ case "setjeda": {
 }
 break;
 
-
 case "pushkontak": case "puskontak": {
 if (!isOwner) return m.reply(mess.owner)
 if (!text) return m.reply(`*Contoh :* ${cmd} pesannya`)
@@ -780,8 +753,8 @@ case "pushkontak-response": {
   const jidawal = m.chat
   const data = await sock.groupMetadata(text)
   const halls = data.participants
-    .filter(v => v.id.includes(".net") ? v.id : v.jid)
-    .map(v => v.id.includes(".net") ? v.id : v.jid)
+    .filter(v => v.id.includes("@s.whatsapp.net") ? v.id : v.jid)
+    .map(v => v.id.includes("@s.whatsapp.net") ? v.id : v.jid)
     .filter(id => id !== botNumber && id.split("@")[0] !== global.owner); 
 
   await m.reply(`🚀 Memulai pushkontak ke dalam grup ${data.subject} dengan total member ${halls.length}`);
@@ -798,55 +771,6 @@ case "pushkontak-response": {
     break
     }
     await sock.sendMessage(mem, { text: teks }, { quoted: FakeChannel });
-    await global.sleep(global.JedaPushkontak);
-    count += 1
-  }
-  
-  delete global.statuspush
-  await m.reply(`✅ Sukses pushkontak!\nPesan berhasil dikirim ke *${count}* member.`, jidawal)
-}
-break
-
-case "pushkontak-response": {
-  if (!isOwner) return m.reply(mess.owner)
-  if (!global.textpushkontak) return m.reply(`Data teks pushkontak tidak ditemukan!\nSilahkan ketik *.pushkontak* pesannya`);
-  
-  const teks = global.textpushkontak
-  const jidawal = m.chat
-  const data = await sock.groupMetadata(text)
-  const halls = data.participants
-    .filter(v => v.id.includes(".net") ? v.id : v.jid)
-    .map(v => v.id.includes(".net") ? v.id : v.jid)
-    .filter(id => id !== botNumber && id.split("@")[0] !== global.owner); 
-
-  await m.reply(`🚀 Memulai pushkontak ke dalam grup ${data.subject} dengan total member ${halls.length}`);
-  
-  global.statuspush = true
-  delete global.textpushkontak
-  let count = 0
-
-  // fungsi random kode
-  function randomKode(length) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    let result = ''
-    for (let i = 0; i < length; i++) {
-      result += chars.charAt(Math.floor(Math.random() * chars.length))
-    }
-    return result
-  }
- 
-  for (const mem of halls) {
-    if (global.stoppush) {
-      delete global.stoppush
-      delete global.statuspush
-      break
-    }
-
-    // bikin kode baru tiap kirim
-    let kodeUnik = randomKode(6)
-    let pesan = `${teks}\n\nKode unik: #${kodeUnik}`
-
-    await sock.sendMessage(mem, { text: pesan }, { quoted: FakeChannel });
     await global.sleep(global.JedaPushkontak);
     count += 1
   }
@@ -897,6 +821,46 @@ await sock.sendMessage(m.chat, {
   viewOnce: true,
   text: `\nPilih Target Grup PushkontakV2\n`
 }, { quoted: m })
+}
+break
+
+case "pushkontak-response2": {
+  if (!isOwner) return m.reply(mess.owner)
+  if (!global.textpushkontak) return m.reply(`Data teks pushkontak tidak ditemukan!\nSilahkan ketik *.pushkontak2* pesannya|namakontak`);
+  const teks = global.textpushkontak
+  const jidawal = m.chat
+  const data = await sock.groupMetadata(text.split("|")[0])
+  const halls = data.participants
+    .filter(v => v.id.includes("@s.whatsapp.net") ? v.id : v.jid)
+    .map(v => v.id.includes("@s.whatsapp.net") ? v.id : v.jid)
+    .filter(id => id !== botNumber && id.split("@")[0] !== global.owner); 
+
+  await m.reply(`🚀 Memulai pushkontak autosave kontak ke dalam grup ${data.subject} dengan total member ${halls.length}`);
+  
+  global.statuspush = true
+  
+ delete global.textpushkontak
+ let count = 0
+ 
+  for (const mem of halls) {
+    if (global.stoppush) {
+    delete global.stoppush
+    delete global.statuspush
+    break
+    }    
+    const contactAction = {
+        "fullName": `${text.split("|")[1]} #${mem.split("@")[0]}`,
+        "lidJid": mem, 
+        "saveOnPrimaryAddressbook": true
+    };
+    await sock.sendMessage(mem, { text: teks }, { quoted: FakeChannel });
+    await sock.addOrEditContact(mem, contactAction);
+    await global.sleep(global.JedaPushkontak);
+    count += 1
+  }
+  
+  delete global.statuspush
+  await m.reply(`✅ Sukses pushkontak!\nTotal kontak berhasil disimpan *${count}*`, jidawal)
 }
 break
 
@@ -954,7 +918,7 @@ break
 
 case "savekontak": case "svkontak": {
 if (!isOwner) return m.reply(mess.owner)
-if (!text) return m.reply(`Masukan namakontak\n*Contoh :* ${cmd} Lexzymarket`)
+if (!text) return m.reply(`Masukan namakontak\n*Contoh :* ${cmd} Xskycode`)
 global.namakontak = text
 let rows = []
 const a = await sock.groupFetchAllParticipating()
@@ -1002,16 +966,16 @@ case "savekontak-response": {
   try {
     const res = await sock.groupMetadata(text)
     const halls = res.participants
-      .filter(v => v.id.includes(".net") ? v.id : v.jid.endsWith('.net'))
-      .map(v => v.id.includes(".net") ? v.id : v.jid)
+      .filter(v => v.id.includes("@s.whatsapp.net") ? v.id : v.jid)
+      .map(v => v.id.includes("@s.whatsapp.net") ? v.id : v.jid)
       .filter(id => id !== botNumber && id.split("@")[0] !== global.owner)
 
     if (!halls.length) return m.reply("Tidak ada kontak yang bisa disimpan.")
     let names = text
-    const existingContacts = JSON.parse(fs.readFileSync('./Data/contacts.json', 'utf8') || '[]')
+    const existingContacts = JSON.parse(fs.readFileSync('./storage/contacts.json', 'utf8') || '[]')
     const newContacts = [...new Set([...existingContacts, ...halls])]
 
-    fs.writeFileSync('./Data/contacts.json', JSON.stringify(newContacts, null, 2))
+    fs.writeFileSync('./storage/contacts.json', JSON.stringify(newContacts, null, 2))
 
     // Buat file .vcf
     const vcardContent = newContacts.map(contact => {
@@ -1026,7 +990,7 @@ case "savekontak-response": {
       ].join("\n")
     }).join("")
 
-    fs.writeFileSync("./Data/contacts.vcf", vcardContent, "utf8")
+    fs.writeFileSync("./storage/contacts.vcf", vcardContent, "utf8")
 
     // Kirim ke private chat
     if (m.chat !== m.sender) {
@@ -1036,7 +1000,7 @@ case "savekontak-response": {
     await sock.sendMessage(
       m.sender,
       {
-        document: fs.readFileSync("./Data/contacts.vcf"),
+        document: fs.readFileSync("./storage/contacts.vcf"),
         fileName: "contacts.vcf",
         caption: `File kontak berhasil dibuat ✅\nTotal ${halls.length} kontak`,
         mimetype: "text/vcard",
@@ -1046,8 +1010,8 @@ case "savekontak-response": {
     
     delete global.namakontak
 
-    fs.writeFileSync("./Data/contacts.json", "[]")
-    fs.writeFileSync("./Data/contacts.vcf", "")
+    fs.writeFileSync("./storage/contacts.json", "[]")
+    fs.writeFileSync("./storage/contacts.vcf", "")
 
   } catch (err) {
     m.reply("Terjadi kesalahan saat menyimpan kontak:\n" + err.toString())
@@ -1549,12 +1513,12 @@ break;
 
 case "cadmin": {
     if (!isOwner) return m.reply(mess.owner);
-    if (!text) return m.reply(`Masukan username & nomor (opsional)\n*contoh:* ${cmd} skyzopedia,628XXX`)
+    if (!text) return m.reply(`Masukan username & nomor (opsional)\n*contoh:* ${cmd} afiqofficial,628XXX`)
     let nomor, usernem;
     const tek = text.split(",");
     if (tek.length > 1) {
         let [users, nom] = tek;
-        if (!users || !nom) return m.reply(`Masukan username & nomor (opsional)\n*contoh:* ${cmd} skyzopedia,628XXX`)
+        if (!users || !nom) return m.reply(`Masukan username & nomor (opsional)\n*contoh:* ${cmd} afiqofficial,628XXX`)
 
         nomor = nom.replace(/[^0-9]/g, "") + "@s.whatsapp.net";
         usernem = users.toLowerCase();
@@ -1780,29 +1744,33 @@ case "addseller": {
     if (!isOwner) return m.reply(mess.owner);
     if (!text && !m.quoted) return m.reply(`*contoh:* ${cmd} 6283XXX`);
 
-    const input = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, "") + "@s.whatsapp.net";
+    const input = m.mentionedJid[0] 
+        ? m.mentionedJid[0] 
+        : m.quoted 
+            ? m.quoted.sender 
+            : text.replace(/[^0-9]/g, "") + "@s.whatsapp.net";
+
     const input2 = input.split("@")[0];
 
-    if (input2 === global.owner || Reseller.includes(input) || input === botNumber)
+    if (input2 === global.owner || global.db.settings.reseller.includes(input) || input === botNumber)
         return m.reply(`Nomor ${input2} sudah menjadi reseller!`);
 
-    Reseller.push(input);
-    fs.writeFileSync("./Data/reseller.json", JSON.stringify(Reseller, null, 2));
-
+    global.db.settings.reseller.push(input);
     m.reply(`Berhasil menambah reseller ✅`);
 }
 break;
 
 case "listseller": {
-    if (Reseller.length < 1) return m.reply("Tidak ada user reseller");
+    const list = global.db.settings.reseller;
+    if (!list || list.length < 1) return m.reply("Tidak ada user reseller");
 
-    let teks = ``;
-    for (let i of Reseller) {
+    let teks = `Daftar reseller:\n`;
+    for (let i of list) {
         const num = i.split("@")[0];
-        teks += `\n* ${num}\n* *Tag :* @${num}\n`;
+        teks += `\n• ${num}\n  Tag: @${num}\n`;
     }
 
-    sock.sendMessage(m.chat, { text: teks, mentions: Reseller }, { quoted: m });
+    sock.sendMessage(m.chat, { text: teks, mentions: list }, { quoted: m });
 }
 break;
 
@@ -1810,18 +1778,22 @@ case "delseller": {
     if (!isOwner) return m.reply(mess.owner);
     if (!m.quoted && !text) return m.reply(`*Contoh :* ${cmd} 6283XXX`);
 
-    const input = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, "") + "@s.whatsapp.net";
+    const input = m.mentionedJid[0] 
+        ? m.mentionedJid[0] 
+        : m.quoted 
+            ? m.quoted.sender 
+            : text.replace(/[^0-9]/g, "") + "@s.whatsapp.net";
+
     const input2 = input.split("@")[0];
 
-    if (input2 == global.owner || input == botNumber)
+    if (input2 === global.owner || input === botNumber)
         return m.reply(`Tidak bisa menghapus owner!`);
 
-    if (!Reseller.includes(input))
+    const list = global.db.settings.reseller;
+    if (!list.includes(input))
         return m.reply(`Nomor ${input2} bukan reseller!`);
 
-    Reseller.splice(Reseller.indexOf(input), 1);
-    fs.writeFileSync("./Data/reseller.json", JSON.stringify(Reseller, null, 2));
-
+    list.splice(list.indexOf(input), 1);
     m.reply(`Berhasil menghapus reseller ✅`);
 }
 break;
@@ -1832,51 +1804,75 @@ await sock.sendContact(m.chat, [global.owner], global.namaOwner, "Developer Bot"
 break
 
 case "addowner": case "addown": {
-if (!isOwner) return m.reply(mess.owner)
-let input = m.quoted ? m.quoted.sender : m.mentionedJid[0] ? m.mentionedJid[0] : text ? text.replace(/[^0-9]/g, "") + "@s.whatsapp.net" : null
-if (!input) return m.reply(`*Contoh penggunaan :*
-ketik ${cmd} 6285XXX`)
-let jid = input.split("@")[0]
-const botNumber = sock.user.id.split(":")[0] + "@s.whatsapp.net"
-if (jid == global.owner || input == botNumber) return m.reply(`Nomor ${jid} sudah menjadi ownerbot.`)
-const Own = Developer
-if (Own.includes(input)) return m.reply(`Nomor ${jid} sudah menjadi ownerbot.`)
-Own.push(input)
-await fs.writeFileSync("./Data/developer.json", JSON.stringify(Own, null, 2))
-await m.reply(`Berhasil menambah owner ✅
-- ${input.split("@")[0]}`)
+    if (!isOwner) return m.reply(mess.owner);
+
+    const input = m.quoted 
+        ? m.quoted.sender 
+        : m.mentionedJid[0] 
+            ? m.mentionedJid[0] 
+            : text 
+                ? text.replace(/[^0-9]/g, "") + "@s.whatsapp.net" 
+                : null;
+
+    if (!input) return m.reply(`*Contoh penggunaan :*\n${cmd} 6285XXX`);
+
+    const jid = input.split("@")[0];
+    const botNumber = sock.user.id.split(":")[0] + "@s.whatsapp.net";
+
+    if (jid == global.owner || input == botNumber) 
+        return m.reply(`Nomor ${jid} sudah menjadi ownerbot.`);
+
+    if (global.db.settings.developer.includes(input)) 
+        return m.reply(`Nomor ${jid} sudah menjadi ownerbot.`);
+
+    global.db.settings.developer.push(input);
+    return m.reply(`Berhasil menambah owner ✅\n- ${jid}`);
 }
-break
+break;
 
 case "delowner": case "delown": {
-if (!isOwner) return m.reply(mess.owner)
-let input = m.quoted ? m.quoted.sender : m.mentionedJid[0] ? m.mentionedJid[0] : text ? text.replace(/[^0-9]/g, "") + "@s.whatsapp.net" : null
-if (!input) return m.reply(`*Contoh penggunaan :*
-ketik ${cmd} 6285XXX`)
-const Own = Developer
+    if (!isOwner) return m.reply(mess.owner);
+
+    const input = m.quoted 
+        ? m.quoted.sender 
+        : m.mentionedJid[0] 
+            ? m.mentionedJid[0] 
+            : text 
+                ? text.replace(/[^0-9]/g, "") + "@s.whatsapp.net" 
+                : null;
+
+    if (!input) return m.reply(`*Contoh penggunaan :*\n${cmd} 6285XXX`);
+
     if (input.toLowerCase() === "all") {
-        Own.length = 0
-        await fs.writeFileSync("./Data/developer.json", JSON.stringify(Own, null, 2))
-        return m.reply("Berhasil menghapus semua owner ✅")
+        global.db.settings.developer = [];
+        return m.reply("Berhasil menghapus semua owner ✅");
     }
-    if (!Own.includes(input)) return m.reply("Nomor tidak ditemukan!")
-    const index = Own.indexOf(input)
-    Own.splice(index, 1)
-    await fs.writeFileSync("./Data/developer.json", JSON.stringify(Own, null, 2))
-await m.reply(`Berhasil menghapus owner ✅
-- ${input.split("@")[0]}`)
+
+    if (!global.db.settings.developer.includes(input)) 
+        return m.reply("Nomor tidak ditemukan!");
+
+    global.db.settings.developer = global.db.settings.developer.filter(i => i !== input);
+    return m.reply(`Berhasil menghapus owner ✅\n- ${input.split("@")[0]}`);
 }
-break
+break;
 
 case "listowner": case "listown": {
-const Own = JSON.parse(fs.readFileSync("./Data/developer.json"))
-if (Own.length < 1) return m.reply("Tidak ada owner tambahan.")
-let teks = ""
-for (let i of Own) {
-teks += `\n- Number: ${i.split("@")[0]}
-- Tag: @${i.split("@")[0]}\n`
+    const Own = global.db.settings.developer;
+    if (!Own || Own.length < 1) return m.reply("Tidak ada owner tambahan.");
+
+    let teks = "Daftar owner tambahan:\n";
+    for (let i of Own) {
+        const num = i.split("@")[0];
+        teks += `\n- Number: ${num}\n- Tag: @${num}\n`;
+    }
+    return sock.sendMessage(m.chat, { text: teks, mentions: Own }, { quoted: m });
 }
-return m.reply(teks)
+break;
+
+case "resetdb": case "rstdb": {
+if (!isOwner) return m.reply(mess.owner)
+global.db = {}
+return m.reply("Berhasil mereset database ✅")
 }
 break
 
