@@ -1,5 +1,35 @@
 {
-  "users": {},
-  "groups": {},
-  "settings": {}
+  "users": {
+    "6283126046403@s.whatsapp.net": {},
+    "6283193211556@s.whatsapp.net": {},
+    "92467005239432@lid": {},
+    "92467005239432@s.whatsapp.net": {},
+    "6281232259042@s.whatsapp.net": {},
+    "6283850188534@s.whatsapp.net": {},
+    "120363402625644245@newsletter": {}
+  },
+  "groups": {
+    "120363163888487537@g.us": {
+      "antilink": false,
+      "antilink2": false
+    }
+  },
+  "settings": {
+    "welcome": false,
+    "developer": [],
+    "reseller": [],
+    "bljpm": [
+      "120363163888487537@g.us"
+    ],
+    "respon": [
+      {
+        "id": "halo",
+        "response": "Hai"
+      },
+      {
+        "id": "harga script",
+        "response": "*𝗨𝗽𝗱𝗮𝘁𝗲 𝗦𝗰𝗿𝗶𝗽𝘁 𝗦𝘁𝗼𝗿𝗲𝗯𝗼𝘁𝘇 𝗩𝗲𝗿𝘀𝗶𝗼𝗻 𝟲 🚀*\n\n- Addlist, ListProduk, Delproduk\n- Fitur Mainan Media Tambahan\n- Store Menu Done, Proses dll\n- Auto Jpm Grup & Channel On\n- Auto Reply Chat Terbaru! \n- Auto Join Link Grup On! \n- Pushkontak Autosave On\n- CPanel Menu & Reseller Panel\n- Cocok Buat Store / Kebutuhan\n- Cocok Buat Open Sewa Bot\n- Source Code No Enc 100%\n\n*Information Script!*\n- 15.000 IDR - Reguler\n- 25.000 IDR - Free Update selamanya\n- Review YouTube : FyxzpediaYT\n\n*Contact Admin:*\n- t.me/Fyxzpedia (FastRespon)"
+      }
+    ]
+  }
 }

@@ -1,22 +1,4 @@
-/* 
-
-   #### Pushkontak By Skyzopedia #####
-   
-   Developer: 
-   - Skyzopedia (https://t.me/Xskycode)
-   
-   Follow Channel Developer:
-   - https://whatsapp.com/channel/0029VbBjJiH6LwHpPjYCZ334
-   
-   Recode:
-   - Isi namamu (sosmed)
-   
-   # Penting
-   Jangan hapus credits atau nama developer
-   hargai pembuat script ini!
-
-*/
-
+ 
 
 const fs = require('fs');
 const { tmpdir } = require("os");

