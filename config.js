@@ -1,201 +1,156 @@
 /**
- * Untuk gambar/audio/video, ada di folder 'assets'
- * 
- * Credits & Thanks to
- * Developer = Lucky Archz ( Zann )
- * Lead owner = HyuuSATAN
- * Owner = Keisya
- * Designer = Danzzz
- * Wileys = Penyedia baileys
- * Penyedia API
- * Penyedia Scraper
- * 
- * JANGAN HAPUS/GANTI CREDITS & THANKS TO
- * JANGAN DIJUAL YA MEK
- * 
- * Saluran Resmi Ourin:
- * https://whatsapp.com/channel/0029VbB37bgBfxoAmAlsgE0t 
- */
 
-const config = {
+╔═━━━━✦❘༻ Licensi Resmi ༺❘✦━━━━═╗
+Script ini merupakan karya resmi dan original oleh:
+★ FallZx Infinity ★
 
-    owner: {
-        name: 'Zann',                    // Nama owner
-        number: ['62xxxxxxxxxxxx']         // Format: 628xxx (tanpa + atau 0)
-    },
+Refactoring dari: Encore MD  
+Project Kolaborasi: Cantarella × Encore  
+Menggunakan Baileys Optimah dari:
+📁 github: FallEzz/baileys-corp
 
-    session: {
-        pairingNumber: '62xxxxxxxxxxxx',   // Nomor WA yang akan di-pair
-        usePairingCode: true              // true = Pairing Code, false = QR Code
-    },
+────────────────────────────────────
+💠 Keuntungan Penggunaan Script 💠
+✔ Anti Delay  
+✔ Anti Rate Over Limit  
+✔ Fast Response Engine  
 
-    bot: {
-        name: '𝗢 𝗨 𝗥 𝗜 𝗡  𝗠 𝗗',                 // Nama bot
-        version: '1.3.1',                 // Versi bot
-        developer: 'Lucky Archz'          // Nama developer
-    },
+────────────────────────────────────
+📌 PERINGATAN ❗
+DILARANG Upload / Repost / Record / Review  
+Tanpa Izin Resmi dari Pemilik Asli
 
-    mode: 'public',
+Silakan hubungi:
+☎ Wa: 60136951175  
+📸 IG: Fallxd_781  
 
-    command: {
-        prefix: '.'                       // Prefix utama (.menu, .help, dll)
-    },
+Segala bentuk penyalahgunaan akan dikenakan tindakan tegas sesuai ketentuan kreator.
 
-    limits: {
-        default: 25,                      // User biasa
-        premium: 100,                     // Premium user
-        owner: -1                         // Owner (-1 = unlimited)
-    },
+────────────────────────────────────
+⭑ Hak cipta sepenuhnya dimiliki oleh:
+🄯 FallZx Infinity
 
-    sticker: {
-        packname: 'Ourin-AI',             // Nama pack sticker
-        author: 'Bot'                     // Author sticker
-    },
+Terima kasih telah menghargai karya dan kreator ✦
 
-    saluran: {
-        id: '120363400911374213@newsletter',                           // ID saluran (contoh: 120363xxx@newsletter)
-        name: '- Kunjungi Saluran Resmi dari Bot Ourin',       // Nama saluran
-        link: 'https://whatsapp.com/channel/0029VbB37bgBfxoAmAlsgE0t'                          // Link saluran
-    },
+╚═━━━━✦❘༺ End License ༻❘✦━━━━═╝
 
-    features: {
-        antiSpam: true,
-        antiSpamInterval: 3000,
-        antiCall: true,
-        autoTyping: true,
-        autoRead: false,
-        logMessage: true,
-        dailyLimitReset: true,
-        smartTriggers: false
-    },
+**/
+require("./Cantarella")
+const fs = require('fs')
+const { version } = require("./package.json")
+//~~~~~~~~~SETTING BOT~~~~~~~~~~//
 
-    welcome: { defaultEnabled: false },
-    goodbye: { defaultEnabled: false },
+// Bebas Ubah
+global.owner = "60136951175"
+global.nobot = "60136951175"
+global.namaowner = "ғᴀʟʟᴢx || ᴄᴀɴᴛᴀʀᴇʟʟᴀ"
+global.namaBot = "ᴄᴀɴᴛᴀʀᴇʟʟᴀ"
+global.title = "ᴅᴇᴠs || ᴄᴀɴᴛᴀʀᴇʟʟᴀ"
+global.thumnail2 = "https://img1.pixhost.to/images/10636/667923662_lightsecret.jpg"
+// Jangan Di ubah
+global.creator = `${owner}@s.whatsapp.net` 
+global.foother = `© ${namaBot}`
+global.versi = "New"
+global.nama = namaBot 
+global.namach = nama 
+global.namafile = foother 
+global.author = namaowner
 
-    premiumUsers: [],
-    bannedUsers: [],
 
-    ui: {
-        menuVariant: 2
-    },
+global.frch = ["48ff6e64f25bb5d566a603e40906c3b8e6392d961f4905f77887762b7bf03409",
+"Isi Apikeys Mu" // Dapatkan apikey di https://asitha.top/login?ref=hillaryy2555
+]
 
-    messages: {
-        wait: '⏳ Tunggu sebentar...',
-        success: '✅ Berhasil!',
-        error: '❌ Terjadi kesalahan!',
-        ownerOnly: '🚫 Command ini khusus owner!',
-        premiumOnly: '💎 Command ini khusus premium!',
-        groupOnly: '👥 Command ini hanya untuk grup!',
-        privateOnly: '📱 Command ini hanya untuk private chat!',
-        cooldown: '⏱️ Tunggu %time% detik lagi!',
-        limitExceeded: '📊 Limit harian kamu sudah habis!',
-        banned: '🚫 Kamu dibanned dari bot ini!'
-    },
 
-    database: { path: './src/database' },
-    backup: { enabled: false, intervalHours: 24, retainDays: 7 },
-    scheduler: { resetHour: 0, resetMinute: 0 },
 
-    // Dev mode settings (auto-enabled jika NODE_ENV=development)
-    dev: {
-        enabled: process.env.NODE_ENV === 'development',
-        watchPlugins: true,    // Hot reload plugins (SAFE)
-        watchSrc: false,       // DISABLED - src reload causes connection conflict 440
-        debugLog: false        // Show stack traces
-    },
 
-    pterodactyl: {
-        server1: {
-            domain: '',
-            apikey: '',
-            capikey: '',
-            egg: '15',
-            nestid: '5',
-            location: '1'
-        },
-        // server2: {
-        //     domain: '',
-        //     apikey: '',
-        //     capikey: '',
-        //     egg: '15',
-        //     nestid: '5',
-        //     location: '1'
-        // },
-        // server3: {
-        //     domain: '',
-        //     apikey: '',
-        //     capikey: '',
-        //     egg: '15',
-        //     nestid: '5',
-        //     location: '1'
-        // },
-        sellers: [],
-        ownerPanels: []
-    }
+// Bebas Ubah
+// True = on || False = Off 
+global.status = true
+global.owneroff = true
+global.autoread = true
+global.autotyping = true
+global.Antilinkgc = true
+global.Antilinkch = true
+global.antispam = true
+global.onlygc = false
+
+// Set Payment
+global.qris = "https://files.catbox.moe/iwpd4i.jpg"
+global.dana = "085813708397"
+global.gopay = "085813708397"
+
+// ===={ Set Link }
+global.ch = 'https://whatsapp.com/channel/0029VaBOlsv002TEjlntTE2D'
+global.idch = '120363186130999681@newsletter'
+global.linkgc = 'https://chat.whatsapp.com/L76YNpx5yqU4NGVIDQ1GUM'
+global.yt = 'https://youtube.com/@fallzx-features'
+global.nekorin = "https://api.nekorinn.my.id"
+global.idgc = "120363399209756764@g.us"
+// set prefix
+global.setprefix = ".", "/", "#"
+
+// User Sosmed
+global.tt = "@siapaa_2022"
+global.yt = "@fallzx-features"
+global.ig = "@fallxd_781"
+
+// Setting Api cVPS
+global.doToken = "APIKEY"
+global.linodeToken = "APIKEY"
+
+// Settings Api Panel Pterodactyl
+global.egg = "15" // Egg ID
+global.nestid = "5" // nest ID
+global.loc = "1" // Location ID
+global.domain = "https://"
+global.apikey = "ptla" //ptla
+global.capikey = "ptlc" //ptlc
+
+// [ THEME URL & URL ] ========//
+global.thumbnail = 'https://img1.pixhost.to/images/10635/667921457_lightsecret.jpg'
+
+// Settings reply ~~~~~~~~~//
+global.mess = {
+    owner: "Khusus Owner",
+    prem: "Khusus Premium",
+    group: "Khusus di Group Chat",
+    admin: "Khusus Admin",
+    botadmin: "Bot Harus Jadi Admin",
+    private: "Khusus di Private Chat",
+    done: "Sukses"
 }
 
+global.packname = nama
+global.author = namaBot
 
-// ═══════════════════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS - Jangan diubah tod, nanti elol!
-// ═══════════════════════════════════════════════════════════════════════════
+//
+global.gamewaktu = 60 // Game waktu
+global.suit = {};
+global.tictactoe = {};
+global.petakbom = {};
+global.kuis = {};
+global.siapakahaku = {};
+global.asahotak = {};
+global.susunkata = {};
+global.caklontong = {};
+global.family100 = {};
+global.tebaklirik = {};
+global.tebaklagu = {};
+global.tebakgambar2 = {};
+global.tebakkimia = {};
+global.tebakkata = {};
+global.tebakkalimat = {};
+global.tebakbendera = {};
+global.tebakanime = {};
+global.kuismath = {};
 
-function isOwner(number) {
-    if (!number) return false
-    const cleanNumber = number.replace(/[^0-9]/g, '')
-    
-    if (config.bot.number) {
-        const botClean = config.bot.number.replace(/[^0-9]/g, '')
-        if (cleanNumber === botClean || cleanNumber.endsWith(botClean) || botClean.endsWith(cleanNumber)) return true
-    }
-    
-    return config.owner.number.some(owner => {
-        const cleanOwner = owner.replace(/[^0-9]/g, '')
-        return cleanNumber === cleanOwner || cleanNumber.endsWith(cleanOwner) || cleanOwner.endsWith(cleanNumber)
-    })
-}
+//~~~~~~~~~~~ DIEMIN ~~~~~~~~~~//
 
-function isPremium(number) {
-    if (!number) return false
-    if (isOwner(number)) return true
-    
-    const cleanNumber = number.replace(/[^0-9]/g, '')
-    return config.premiumUsers.some(premium => {
-        const cleanPremium = premium.replace(/[^0-9]/g, '')
-        return cleanNumber === cleanPremium || cleanNumber.endsWith(cleanPremium) || cleanPremium.endsWith(cleanNumber)
-    })
-}
-
-function isBanned(number) {
-    if (!number) return false
-    if (isOwner(number)) return false
-    
-    const cleanNumber = number.replace(/[^0-9]/g, '')
-    return config.bannedUsers.some(banned => {
-        const cleanBanned = banned.replace(/[^0-9]/g, '')
-        return cleanNumber === cleanBanned || cleanNumber.endsWith(cleanBanned) || cleanBanned.endsWith(cleanNumber)
-    })
-}
-
-function setBotNumber(number) {
-    if (number) config.bot.number = number.replace(/[^0-9]/g, '')
-}
-
-function isSelf(number) {
-    if (!number || !config.bot.number) return false
-    const cleanNumber = number.replace(/[^0-9]/g, '')
-    const botNumber = config.bot.number.replace(/[^0-9]/g, '')
-    return cleanNumber.includes(botNumber) || botNumber.includes(cleanNumber)
-}
-
-function getConfig() { return config }
-
-module.exports = {
-    ...config,
-    config,
-    getConfig,
-    isOwner,
-    isPremium,
-    isBanned,
-    setBotNumber,
-    isSelf
-}
+let file = require.resolve(__filename)
+require('fs').watchFile(file, () => {
+  require('fs').unwatchFile(file)
+  console.log('\x1b[0;32m'+__filename+' \x1b[1;32mupdated!\x1b[0m')
+  delete require.cache[file]
+  require(file)
+})

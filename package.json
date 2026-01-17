@@ -1,46 +1,59 @@
 {
-  "name": "ourin-ai",
-  "version": "1.2.0",
-  "description": "WhatsApp Multi-Device Bot dengan sistem plugin modular",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "set NODE_ENV=development&& node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [
-    "whatsapp",
-    "bot",
-    "baileys",
-    "multi-device",
-    "plugin"
-  ],
-  "author": "Lucky Archz, Keisya, hyuuSATAN",
-  "license": "ISC",
-  "type": "commonjs",
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "@bochilteam/scraper-primbon": "^5.0.0",
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "@hapi/boom": "^10.0.1",
-    "archiver": "^7.0.1",
-    "axios": "^1.13.2",
-    "btch-downloader": "^6.0.25",
-    "cheerio": "^1.1.2",
-    "fluent-ffmpeg": "^2.1.3",
-    "form-data": "^4.0.0",
-    "jimp": "^0.16.1",
-    "lowdb": "^7.0.1",
-    "node-fetch": "^2.7.0",
-    "node-webpmux": "^3.2.1",
-    "ourin": "npm:wileys@^0.4.2",
-    "pino": "^9.14.0",
-    "sharp": "^0.34.1",
-    "yt-search": "^2.13.1"
-  },
-  "devDependencies": {
-    "nodemon": "^3.1.11"
-  }
+    "name": "Cantarella-Release",
+    "version": "1.0.0",
+    "description": "Multi-Device",
+    "main": "index.js",
+    "type": "commonjs",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "keywords": [
+        "whiskeysockets",
+        "multi-device",
+        "LightSecret",
+        "Silence"
+    ],
+    "author": "FallZx Infinity",
+    "license": "MIT",
+    "dependencies": {
+        "@google/generative-ai": "^0.24.0",
+        "@adiwajshing/keyed-db": "^0.2.4",
+        "@colors/colors": "^1.5.0",
+        "@ffmpeg-installer/ffmpeg": "^1.1.0",
+        "@hapi/boom": "^10.0.0",
+        "@vreden/youtube_scraper": "^1.2.0",
+        "@whiskeysockets/baileys": "github:FallEzz/baileys-corp",
+        "awesome-phonenumber": "^2.70.0",
+        "cfonts": "^3.3.0",
+        "chalk": "^4.1.2",
+        "cheerio": "^1.0.0-rc.12",
+        "child_process": "^1.0.2",
+        "colors": "latest",
+        "crypto": "^1.0.1",
+        "fluent-ffmpeg": "latest",
+        "ffmpeg-static": "^5.2.0",
+        "dhn-api": "^1.1.3",
+        "genshin-db": "^5.1.11",
+        "fs": "0.0.1-security",
+        "javascript-obfuscator": "^4.1.0",
+        "generative-ai": "^0.1.4",
+        "human-readable": "^0.2.1",
+        "hybrid-ytdl": "^1.2.4",
+        "jimp": "^0.16.1",
+        "moment-timezone": "^0.5.34",
+        "node-fetch": "^2.6.1",
+        "node-upload-images": "^1.0.1",
+        "node-webpmux": "^3.1.1",
+        "os": "^0.1.2",
+        "path": "^0.12.7",
+        "pino": "^7.0.5",
+        "qrcode-terminal": "^0.12.0",
+        "readline": "^1.3.0",
+        "request": "^2.88.2",
+        "scrape-primbon": "^1.1.0",
+        "object-query-string": "^1.2.0",
+        "stream": "^0.0.3",
+        "util": "^0.12.4",
+        "yt-search": "^2.12.1"
+    }
 }
