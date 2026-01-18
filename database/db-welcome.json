@@ -1,0 +1,86 @@
+{
+  "120363423733340238@g.us": {
+    "welcome": {
+      "enabled": true,
+      "text": "🎉 Selamat datang @user di @group!\n\nSemoga betah ya! 😊",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997287781"
+    },
+    "goodbye": {
+      "enabled": true,
+      "text": "👋 Selamat tinggal @user!\n\nSemoga sukses selalu! 💫",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997163995"
+    }
+  },
+  "120363421641867509@g.us": {
+    "welcome": {
+      "enabled": true,
+      "text": "🎉 Selamat datang @user di @group!\n\nSemoga betah ya! 😊",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997287781"
+    },
+    "goodbye": {
+      "enabled": true,
+      "text": "👋 Selamat tinggal @user!\n\nSemoga sukses selalu! 💫",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997163995"
+    }
+  },
+  "120363422491803981@g.us": {
+    "welcome": {
+      "enabled": true,
+      "text": "selamat datang",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997287781"
+    },
+    "goodbye": {
+      "enabled": true,
+      "text": "selamat tinggal",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997163995"
+    }
+  },
+  "120363421927478377@g.us": {
+    "welcome": {
+      "enabled": true,
+      "text": "setwelcome \nIntro kids @user\n\nNama:\nUmur:\nAskot:\nGender:\n\n*BETAH² YA JING DI KS*",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997287781"
+    },
+    "goodbye": {
+      "enabled": true,
+      "text": "setgoodbye yaudah si, out aja kalo gak betah",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997163995"
+    }
+  },
+  "120363423553750156@g.us": {
+    "welcome": {
+      "enabled": true,
+      "text": "selamat datang di jb CACA STORE",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997287781"
+    },
+    "goodbye": {
+      "enabled": true,
+      "text": "user",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997163995"
+    }
+  },
+  "120363424479608675@g.us": {
+    "welcome": {
+      "enabled": true,
+      "text": "🎉 Selamat datang @user di @group!\n\nSemoga betah ya! 😊",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997287781"
+    },
+    "goodbye": {
+      "enabled": true,
+      "text": "👋 Selamat tinggal @user!\n\nSemoga sukses selalu! 💫",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997163995"
+    }
+  },
+  "120363421738994207@g.us": {
+    "welcome": {
+      "enabled": true,
+      "text": "SELAMAT DATANG DI MAKERKET FISH IT BY CACA STORE @user semoga betah yah💠",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997287781"
+    },
+    "goodbye": {
+      "enabled": true,
+      "text": "selamat tingga sukses selalu✨️ @user",
+      "image": "https://raw.githubusercontent.com/zionjs/whatsapp-media/main/file_1761997163995"
+    }
+  }
+}
